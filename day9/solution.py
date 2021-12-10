@@ -5,20 +5,15 @@ def parse_input(file_path):
         numbers = [[int(c) for c in line.strip()] for line in f.readlines()]
         return np.array(numbers)
 
+def is_out_of_bounds(matrix, point):
+    i,j = point
+    return i >= 0 and i < matrix.shape[0] and j >= 0 and j < matrix.shape[1]
+
 def get_neighbors(matrix, i, j):
-    neighbor_values, neighbor_indices = [], []
-    if i > 0:
-        neighbor_indices.append((i-1,j))
-        neighbor_values.append(matrix[i-1,j])
-    if i < matrix.shape[0] - 1:
-        neighbor_indices.append((i+1,j))
-        neighbor_values.append(matrix[i+1,j])
-    if j > 0:
-        neighbor_indices.append((i,j-1))
-        neighbor_values.append(matrix[i,j-1])
-    if j < matrix.shape[1] - 1:
-        neighbor_indices.append((i,j+1))
-        neighbor_values.append(matrix[i,j+1])
+    neighbor_indices = [(i - 1, j), (i + 1, j), (i, j - 1), (i, j + 1)]
+    neighbor_indices = list(filter(lambda point: is_out_of_bounds(matrix, point), neighbor_indices))
+    neighbor_values = [matrix[x,y] for (x,y) in neighbor_indices]
+
     return neighbor_indices, np.array(neighbor_values)
 
 def get_local_minimas(matrix):
@@ -48,12 +43,8 @@ def find_basin(matrix, basin):
 
 def part2(matrix):
     minimas = get_local_minimas(matrix)
-    basin_sizes = []
-    for minimum in minimas:
-        basin = find_basin(matrix, {minimum})
-        basin = sorted(basin)
-        basin_size = len(basin)
-        basin_sizes.append(basin_size)
+    basin_sizes = [len(find_basin(matrix, {minimum})) for minimum in minimas]
+
     return np.prod(sorted(basin_sizes, reverse=True)[:3])
 
 if __name__ == "__main__":
